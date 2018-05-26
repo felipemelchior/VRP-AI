@@ -2,23 +2,25 @@ import math # Importação da biblioteca matematica
 
 class Vrp(): # Definição da classe principal do programa, chamada vrp
 	def __init__(self): # Construtor da classe, apenas inicializa o grafo com uma lista vazia
+		self.numConsumers = 0 # Inteiro que guarda o numero de consumidores
+		self.vehiclesCapacity = 0  # Inteiro que guarda a capacidade dos caminhões
 		self.Graph = [] # Grafo inicializado com uma lista vazia
 		self.Demands = [] # Lista que armazena as demandas de cada cidade e se a cidade já foi visitada
 		self.Distances = [] # Lista que guarda as distancias entre cada ponto
 		self.Routes = [] # Lista de Rotas que os caminhões farão
-
+		
 	def reader(self): # Função que faz a leitura dos dados, podendo entrar pelo teclado ou redirecionando a entrada padrão
 		string = input("Enter the number of consumers and th capacity of vehicles => ") # Usado uma string auxiliar para pegar os dados digitados
-		numConsumers, vehiclesCapacity = map(int,string.split()) # Utilizando um map, os dados são convertidos para inteiro e a string é "separada" para as outras variaveis
+		self.numConsumers, self.vehiclesCapacity = map(int,string.split()) # Utilizando um map, os dados são convertidos para inteiro e a string é "separada" para as outras variaveis
 
 		string = input("Enter the coords (X, Y) of deposit => ") # Utilizando o mesmo sistema de cima, é utilizado uma string para guardar os dados
 		coord_X, coord_Y = map(int, string.split()) # E o mesmo map é usado para atribuir os dados para outras variaveis
 		print() # Print apenas para saltar um linha
 
 		self.Graph.append([coord_X, coord_Y]) # O deposito é adicionado ao grafo, com as coordenadas que foram passadas e demanda 0
-		self.Demands.append([0, False]) # O deposito tem demanda 0 e ainda não foi visitado
+		self.Demands.append([0, True]) # O deposito tem demanda 0 e ja foi visitado, pois o problema começa no deposito
 
-		for i in range(numConsumers): # Aqui temos um bloco de repetição, que vai de 0 até a quantidade de consumidores passado para o programa
+		for i in range(self.numConsumers): # Aqui temos um bloco de repetição, que vai de 0 até a quantidade de consumidores passado para o programa
 			string = input("Enter the coords (X, Y) of consumer and the consumer demand => ") # String auxiliar
 			coord_X, coord_Y, demand = map(int, string.split()) # Novas variaveis atribuidas, da mesma forma de cima
 			print() # Print apenas para saltar um linha
@@ -34,6 +36,10 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 		for i in self.Distances: # Bloco de repetição que inicia em 0 e vai até o tamanho total das distancias
 			print(i) # Imprime cada Distancia do grafo
 
+	def printDemands(self): # Função que imprime as demandas
+		for i in self.Demands: # Bloco que itera até o tamanho maximo das demandas
+			print(i) # Imprime cada Demanda
+
 	def euclidianDist(self): # Função que calcula a distancia euclidiana de cada ponto para todos os pontos
 		for i in range(len(self.Graph)): # Repete ate passar por todas as cidades
 			self.Distances.append([]) # Adiciona a lista que sera modificada pela funcao no momento
@@ -45,4 +51,19 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 					distY = (self.Graph[i][1] - self.Graph[j][1]) ** 2 # Y final menos Y inicial ao quadrado
 					self.Distances[i].append(math.sqrt(distX + distY)) # Raiz quadrada da soma das distancias em X e distancias em Y
 
-	
+	def checkVisited(self): # Função que checa se existem cidades que ainda não foram visitadas
+		for i in range(len(self.Distances)): # For que percorre a quantidade total das distancias
+			if(self.Distances[i][1] == False): # Se existir uma cidade que ainda não foi visitada retorna False
+				return False # Retorno da função caso existir uma cidade não visitada
+
+		return True # Retorno da função caso todas as cidades já foram visitadas
+
+	def genRoutes(self):
+		shorterDistance = 9999
+		routeDemand = 0
+		aux = 0
+		last = self.Routes[-1][-1]
+		
+		while(self.checkVisited() == False):
+			self.Routes.append([0])
+			self.genRoute()

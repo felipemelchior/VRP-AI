@@ -13,4 +13,6 @@ if __name__ == '__main__': # Condição que faz o arquivo funcionar como uma fun
 	vrp.reader() # Chamada da função do leitor
 	# vrp.printGraph() # Chamada da função que imprime todo o grafo
 	vrp.euclidianDist()
-	vrp.printDistances()
+	vrp.printDemands()
+	vrp.genRoutes()
+	#vrp.printDistances()

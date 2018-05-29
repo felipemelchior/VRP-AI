@@ -1,6 +1,5 @@
 import math # Importação da biblioteca matematica
-from operator import itemgetter
-
+from operator import itemgetter # Importação do itemgetter, usado para ordenar os savings
 
 class Vrp(): # Definição da classe principal do programa, chamada vrp
 	def __init__(self): # Construtor da classe, apenas inicializa o grafo com uma lista vazia
@@ -62,13 +61,6 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 					distY = (self.Graph[i][1] - self.Graph[j][1]) ** 2 # Y final menos Y inicial ao quadrado
 					self.Distances[i].append(math.sqrt(distX + distY)) # Raiz quadrada da soma das distancias em X e distancias em Y
 
-	def checkVisited(self): # Função que checa se existem cidades que ainda não foram visitadas
-		for i in range(len(self.Demands)): # For que percorre a quantidade total das distancias
-			if(self.Demands[i][1] == False): # Se existir uma cidade que ainda não foi visitada retorna False
-				return False # Retorno da função caso existir uma cidade não visitada
-
-		return True # Retorno da função caso todas as cidades já foram visitadas
-
 	def savingsAlgorithm(self): # Função do algoritmo de Economias, este algoritmo leva em conta a distancia de uma cidade i ate chegar ao deposito somado à distancia do deposito ate a cidade j e tudo isso subtraido com a distancia de i para j --> Sij = Ci0 + C0j - Cij
 		saving = 0 # Variavel local para o calculo
 
@@ -83,11 +75,27 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 					saving = (self.Distances[i][0] + self.Distances[0][j]) - self.Distances[i][j] # Faz o calculo -- Sij = Ci0 + C0j - Cij
 					self.Savings.append([i, j, saving]) # Adiciona os indices das cidades e o calculo da economia
 
-		self.Savings = sorted(self.Savings, key=itemgetter(2)) # Ordena a lista de economias
+		self.Savings = sorted(self.Savings, key=itemgetter(2), reverse=True) # Ordena a lista de economias
 
-	def start(self):
-		self.reader()
-		self.euclidianDist()
-		# self.printDistances()
-		self.savingsAlgorithm()
-		self.printSavings()
+		for i in range(len(self.Savings)): # For que percorre a lista de economias
+			startRoute = [] # Reset da variavel startRoute
+			endRoute = [] # Reset da variavel endRoute
+			for j in range(len(self.Routes)): # For que percorre as rotas ja existentes
+				if(self.Savings[i][0] == self.Routes[j][-1]): # Se a primeira cidade da dupla de economia estiver no final de uma rota
+					endRoute = self.Routes[j] # Adiciona toda a rota em uma variavel auxiliar
+				elif(self.Savings[i][1] == self.Routes[j][0]): # Se a segunda cidade da dupla de economia estiver no inicio de uma rota
+					startRoute = self.Routes[j] # Adiciona toda a rota em uma variavel auxiliar
+				
+				if((len(startRoute) != 0) and (len(endRoute) != 0)): # Se as duas rotas forem diferentes de nulo
+					self.Routes.remove(startRoute) # Remove da lista de rotas a lista startRoute
+					self.Routes.remove(endRoute) # Remove da lista de rotas a lista endRoute
+					self.Routes.append(endRoute + startRoute) # Adiciona as rotas removidas, porém agora são concatenadas
+					break # Quebra do For para ir para a proxima economia
+
+	def start(self): # Função mestre, que chama todas as outras
+		self.reader() # Chamada da função do leitor
+		self.euclidianDist() # Chamada da função que calcula a distancia euclidiana das cidades
+		# self.printDistances() # Chamada da função que imprime as distancias
+		self.savingsAlgorithm() # Chamada da função que calcula as economias e gera as rotas
+		self.printRoutes() # Chamada da função que imprime as rotas
+		#self.printSavings() # Chamada da função que imprime a lista de economias

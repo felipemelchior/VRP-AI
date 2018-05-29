@@ -5,6 +5,7 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 	def __init__(self): # Construtor da classe, apenas inicializa o grafo com uma lista vazia
 		self.numConsumers = 0 # Inteiro que guarda o numero de consumidores
 		self.vehiclesCapacity = 0  # Inteiro que guarda a capacidade dos caminhões
+		self.Cost = 0 # Varivel de ponto flutuante que guarda o custo das viagens
 		self.Graph = [] # Grafo inicializado com uma lista vazia
 		self.Demands = [] # Lista que armazena as demandas de cada cidade e se a cidade já foi visitada
 		self.Distances = [] # Lista que guarda as distancias entre cada ponto
@@ -20,7 +21,7 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 		print() # Print apenas para saltar um linha
 
 		self.Graph.append([coord_X, coord_Y]) # O deposito é adicionado ao grafo, com as coordenadas que foram passadas e demanda 0
-		self.Demands.append([0, True]) # O deposito tem demanda 0 e ja foi visitado, pois o problema começa no deposito
+		self.Demands.append([0]) # O deposito tem demanda 0
 
 		for i in range(self.numConsumers): # Aqui temos um bloco de repetição, que vai de 0 até a quantidade de consumidores passado para o programa
 			string = input("Enter the coords (X, Y) of consumer and the consumer demand => " ) # String auxiliar
@@ -28,25 +29,30 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 			print() # Print apenas para saltar um linha
 
 			self.Graph.append([coord_X, coord_Y]) # Consumidor adicionado ao grafo, com suas coordenadas
-			self.Demands.append([demand, False]) # Cada consumidor é adicionado à lista de demandas com a sua respectiva demanda e que a cidade ainda não foi visitada
+			self.Demands.append([demand]) # Cada consumidor é adicionado à lista de demandas com a sua respectiva demanda
 
 	def printGraph(self): # Função que imprime todo o grafo
+		print() # Print apenas para saltar um linha
 		for i in self.Graph: # Bloco de repetição que inicia em 0 e vai até o tamanho total do grafo
 			print(i) # Imprime cada Vertice do grafo
 
 	def printDistances(self): # Função que imprime as distancias
+		print() # Print apenas para saltar um linha
 		for i in self.Distances: # Bloco de repetição que inicia em 0 e vai até o tamanho total das distancias
 			print(i) # Imprime cada Distancia do grafo
 
 	def printDemands(self): # Função que imprime as demandas
+		print() # Print apenas para saltar um linha
 		for i in self.Demands: # Bloco que itera até o tamanho maximo das demandas
 			print(i) # Imprime cada Demanda
 
 	def printRoutes(self): # Função que imprime as rotas
+		print("\nROUTES\n") # Imprime apenas a palavra ROTAS, apenas para separação
 		for i in self.Routes: # Bloco que itera até o tamanho maximo de rotas
 			print(i) # Imprime cada rota
 
 	def printSavings(self): # Função que imprime as economias
+		print() # Print apenas para saltar um linha
 		for i in self.Savings: # Bloco que percorre toda a lista de economias
 			print(i) # Imprime cada economia
 
@@ -63,7 +69,6 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 
 	def savingsAlgorithm(self): # Função do algoritmo de Economias, este algoritmo leva em conta a distancia de uma cidade i ate chegar ao deposito somado à distancia do deposito ate a cidade j e tudo isso subtraido com a distancia de i para j --> Sij = Ci0 + C0j - Cij
 		saving = 0 # Variavel local para o calculo
-
 		for i in range(1, len(self.Demands)): # Inicia as Rotas inicialmente apenas com o indice, pois sabemos que cada rota começa em 0 e termina em 0
 			self.Routes.append([i]) # Adiciona os indices em uma lista de Rotas
 
@@ -80,6 +85,7 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 		for i in range(len(self.Savings)): # For que percorre a lista de economias
 			startRoute = [] # Reset da variavel startRoute
 			endRoute = [] # Reset da variavel endRoute
+			routeDemand = 0 # Reset da demanda da possivel rota
 			for j in range(len(self.Routes)): # For que percorre as rotas ja existentes
 				if(self.Savings[i][0] == self.Routes[j][-1]): # Se a primeira cidade da dupla de economia estiver no final de uma rota
 					endRoute = self.Routes[j] # Adiciona toda a rota em uma variavel auxiliar
@@ -87,15 +93,32 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 					startRoute = self.Routes[j] # Adiciona toda a rota em uma variavel auxiliar
 				
 				if((len(startRoute) != 0) and (len(endRoute) != 0)): # Se as duas rotas forem diferentes de nulo
-					self.Routes.remove(startRoute) # Remove da lista de rotas a lista startRoute
-					self.Routes.remove(endRoute) # Remove da lista de rotas a lista endRoute
-					self.Routes.append(endRoute + startRoute) # Adiciona as rotas removidas, porém agora são concatenadas
+					for k in range(len(startRoute)): # For que percorre a lista auxiliar
+						routeDemand += self.Demands[startRoute[k]][0] # e adiciona o custo da cidade que está na rota auxiliar
+					for k in range(len(endRoute)): # For que percorre a lista auxiliar
+						routeDemand += self.Demands[endRoute[k]][0] # e adiciona o custo da cidade que está na rota auxiliar
+
+					if(routeDemand <= self.vehiclesCapacity): # Só faz a mudança nas rotas se as demandas couberem no caminhão
+						self.Routes.remove(startRoute) # Remove da lista de rotas a lista startRoute
+						self.Routes.remove(endRoute) # Remove da lista de rotas a lista endRoute
+						self.Routes.append(endRoute + startRoute) # Adiciona as rotas removidas, porém agora são concatenadas
 					break # Quebra do For para ir para a proxima economia
+				
+		for i in range(len(self.Routes)): # For que percorre a lista das Rotas e normaliza as mesma, colocando o deposito no inicio e no final
+			self.Routes[i].insert(0, 0) # Insere o deposito no inicio
+			self.Routes[i].insert(len(self.Routes[i]), 0) # Insere o deposito no final
+
+	def calcCosts(self): # Função que calcula o custo das rotas
+		for i in range(len(self.Routes)): # For que percorre as rotas
+			for j in range(len(self.Routes[i])-1): # For que percorre as cidades da rota acima
+				self.Cost += self.Distances[self.Routes[i][j]][self.Routes[i][j+1]] # Soma das distancias
+				
+		print("\nTotal Cost: ", round(self.Cost,3)) # Imprime o custo
 
 	def start(self): # Função mestre, que chama todas as outras
 		self.reader() # Chamada da função do leitor
 		self.euclidianDist() # Chamada da função que calcula a distancia euclidiana das cidades
-		# self.printDistances() # Chamada da função que imprime as distancias
 		self.savingsAlgorithm() # Chamada da função que calcula as economias e gera as rotas
+		print("============================== RESULTS ==============================") # Print de separação
 		self.printRoutes() # Chamada da função que imprime as rotas
-		#self.printSavings() # Chamada da função que imprime a lista de economias
+		self.calcCosts() # Chamada da função que calcula o custo das rotas

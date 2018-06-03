@@ -54,7 +54,7 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 			print(i) # Imprime cada Demanda
 
 	def printRoutes(self): # Função que imprime as rotas
-		print("\nROUTES\n") # Imprime apenas a palavra ROTAS, apenas para separação
+		# print("\nROUTES\n") # Imprime apenas a palavra ROTAS, apenas para separação
 		for i in self.Routes: # Bloco que itera até o tamanho maximo de rotas
 			print(i) # Imprime cada rota
 
@@ -134,4 +134,4 @@ class Vrp(): # Definição da classe principal do programa, chamada vrp
 		self.savingsAlgorithm() # Chamada da função que calcula as economias e gera as rotas
 		# print("============================== RESULTS ==============================") # Print de separação
 		self.printRoutes() # Chamada da função que imprime as rotas
-		self.calcCosts() # Chamada da função que calcula o custo das rotas
+		# self.calcCosts() # Chamada da função que calcula o custo das rotas
